@@ -1,0 +1,6 @@
+Context-free grammar:
+[S] -> [G_a][T] | [S][S]
+[T] -> b | [S][G_b]
+[G_a] -> abab
+[G_b] -> bababa
+Regular grammar:
