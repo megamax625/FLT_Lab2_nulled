@@ -1,0 +1,10 @@
+Context-free grammar:
+[S] -> [A]b[B] | [C]
+[B] -> [A][A] | [A][C]
+[C] -> b | c
+[A] -> a | ε
+Regular grammar:
+[S] -> c[A]
+[A] -> a
+[D] -> a[D]
+[A] -> s[D]

@@ -15,12 +15,33 @@ public class Grammar {
         startingSymbol = stS;
     }
 
+/*    public boolean isDuplicate(Rule r1, Rule r2) {
+        boolean isDup = true;
+        if ((rules.indexOf(r1) != rules.indexOf(r2)) && (r1.rightPart.size() == r2.rightPart.size()) && (r1.leftPart.name.equals(r2.leftPart.name))) {
+            for (int i = 0; (i < r1.rightPart.size()); i++) {
+                if (!(r1.rightPart.get(i).name.equals(r2.rightPart.get(i).name))) {
+                    isDup = false;
+                    break;
+                }
+            }
+        }
+        return isDup;
+    }
+
+    public void removeDuplicates() {
+        for (Rule r1 : new ArrayList<>(rules)) {
+            for (Rule r2 : new ArrayList<>(rules)) {
+                if (isDuplicate(r1, r2)) rules.remove(r2);
+            }
+        }
+    }*/
+
     public static String getString(Grammar g) {
         StringBuilder s = new StringBuilder("Grammar{nonterminals=");
         for (Symbol nt : g.nonterminals) s.append(nt.name).append(" ");
         s.append(", terminals=");
         for (Symbol t: g.terminals) s.append(t.name).append(" ");
-        s.append(", rules=");
+        s.append("\nrules=");
         for (Rule rl : g.rules) {
             s.append("(");
             s.append(rl.leftPart.name);
@@ -30,7 +51,7 @@ public class Grammar {
             }
             s.append(')');
         }
-        s.append(", startingSymbol=");
+        s.append("\nstartingSymbol=");
         s.append(g.startingSymbol.name).append('}');
         return s.toString();
     }

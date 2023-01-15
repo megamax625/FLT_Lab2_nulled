@@ -26,7 +26,7 @@ public class Main {
                 System.out.println("Incorrect path to the test file");
                 System.exit(1);
             }
-;        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             try {
                 String arg1 = args[0];
                 System.out.println("Path to test: " + arg1);
@@ -48,6 +48,7 @@ public class Main {
         Grammar regularGrammar = CFGandRG[1];
 
         NFA automaton = NFA.RGtoAutomaton(regularGrammar, debug);
+        CNF ChomNF = new CNF(CFGrammar, debug);
     }
 
     private static String ReadInputFromFile(File file) throws IOException {

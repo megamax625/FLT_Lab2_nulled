@@ -1,0 +1,11 @@
+Context-free grammar:
+[S] -> [G_a]a cb[T] | [S]b[S]
+[T] -> bbc | [S]ah[G_b]
+[G_a] -> a
+[G_b] -> b
+[Arlsda] -> h
+Regular grammar:
+[S] -> c[A]
+[A] -> a
+[D] -> a[D]
+[A] -> s[D]
