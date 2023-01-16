@@ -27,6 +27,14 @@ public class NFA {
             this.alphabetic = alph;
             this.right = right;
         }
+
+        @Override
+        public String toString() {
+            return "{" + left.symbol.name +
+                    ", " + alphabetic.name +
+                    ", " + right.symbol.name +
+                    '}';
+        }
     }
 
     public static class State {

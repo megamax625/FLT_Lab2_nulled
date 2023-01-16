@@ -17,9 +17,18 @@ public class Rule {
         }
     }
 
+    public Rule(ArrayList<Symbol> right) {
+        this.rightPart = right;
+    }
+
+    public Rule() {
+        this.leftPart = null;
+        this.rightPart = null;
+    }
+
     @Override
     public String toString() {
-        return "Rule: {leftPart=" + leftPart.name + ", rightPart=[" + rightPart.stream().map((s) -> s.name).collect(Collectors.joining(", ")) +
+        return "Rule: {" + leftPart.name + " -> " + rightPart.stream().map((s) -> s.name).collect(Collectors.joining(", ")) +
                 "]}";
     }
 
@@ -53,5 +62,9 @@ public class Rule {
             if ((s.type.equals("term")) && (!names.contains(s.name))) names.add(s.name);
         }
         return names;
+    }
+
+    public static void DebugPrint(String str, boolean debug) {
+        if (debug) System.out.println(str);
     }
 }

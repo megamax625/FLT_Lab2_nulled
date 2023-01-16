@@ -38,6 +38,16 @@ public class Symbol {
         this.type = type;
     }
 
+    public Symbol(Symbol s) {
+        this.name = s.name;
+        this.type = s.type;
+    }
+
+    public Symbol() {
+        this.name = null;
+        this.type = null;
+    }
+
     @Override
     public String toString() {
         return name;

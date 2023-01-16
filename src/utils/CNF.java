@@ -10,7 +10,7 @@ public class CNF extends Grammar{
     }
 
     public void ConvertToCNF(boolean debug) {
-        if (this.isCNF(debug)) return;
+        if (this.isCNF(debug)) DebugPrint(CNF.getString(this), debug);
         else {
             this.RemoveEps(debug);
             this.RemoveChainRules(debug);
@@ -24,10 +24,11 @@ public class CNF extends Grammar{
         for (Rule r : rules) {
             if (!((Rule.isToNtermNterm(r)) | (Rule.isToTerm(r)) | (Rule.isToEmpty(r) && r.leftPart.equals(startingSymbol)))) {
                 DebugPrint(r.toString() + " does not fit CNF definition!\nStarting conversion", debug);
-                break;
+                return false;
             }
         }
-        return false;
+        DebugPrint("Inputted CFG is indeed in CNF", debug);
+        return true;
     }
 
     public void RemoveEps(boolean debug) {
@@ -294,6 +295,11 @@ public class CNF extends Grammar{
             r.rightPart.remove(0);
             r.leftPart = r2;
         }
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 
     public static void DebugPrint(String str, boolean debug) {

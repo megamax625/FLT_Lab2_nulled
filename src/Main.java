@@ -49,6 +49,8 @@ public class Main {
 
         NFA automaton = NFA.RGtoAutomaton(regularGrammar, debug);
         CNF ChomNF = new CNF(CFGrammar, debug);
+
+        Intersection intersection = new Intersection(ChomNF, automaton, debug);
     }
 
     private static String ReadInputFromFile(File file) throws IOException {

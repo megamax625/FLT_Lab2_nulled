@@ -15,6 +15,13 @@ public class Grammar {
         startingSymbol = stS;
     }
 
+    public Grammar() {
+        nonterminals = new ArrayList<>();
+        terminals = new ArrayList<>();
+        rules = new ArrayList<>();
+        startingSymbol = null;
+    }
+
 /*    public boolean isDuplicate(Rule r1, Rule r2) {
         boolean isDup = true;
         if ((rules.indexOf(r1) != rules.indexOf(r2)) && (r1.rightPart.size() == r2.rightPart.size()) && (r1.leftPart.name.equals(r2.leftPart.name))) {
