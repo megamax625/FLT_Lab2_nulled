@@ -28,7 +28,7 @@ public class Rule {
 
     @Override
     public String toString() {
-        return "Rule: {" + leftPart.name + " -> " + rightPart.stream().map((s) -> s.name).collect(Collectors.joining(", ")) +
+        return "Rule: {" + leftPart.name + " -> " + rightPart.stream().map((s) -> s.name).collect(Collectors.joining(" ")) +
                 "]}";
     }
 

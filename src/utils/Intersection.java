@@ -30,15 +30,32 @@ public class Intersection extends Grammar {
         ArrayList<NFA.Transition> autoTransitions = new ArrayList<>(auto.transitions);
         this.nonterminals = new ArrayList<>();
         this.startingSymbol = new Three(new Symbol(auto.startState.symbol.name), new Symbol(cnf.startingSymbol), new Symbol(finalState.symbol));
+        nonterminals.add(startingSymbol);
         DebugPrint("New starting nonterminal:" + startingSymbol, debug);
         this.buildTerminalRules(CNFRules, autoTransitions, debug);
         DebugPrint(this.toString(), debug);
         this.buildNonTerminalRules(CNFRules, autoTransitions, states, debug);
         DebugPrint(this.toString(), debug);
         DebugPrint("Number of rules: " + rules.size(), debug);
-        this.RemoveUnreachableNonterminals(debug);
-        DebugPrint(this.toString(), debug);
-        this.removeUnproducingNonterminals(debug);
+        int oldRuleSize = rules.size();
+        do {
+            oldRuleSize = rules.size();
+            this.RemoveUnreachableNonterminals(debug);
+            DebugPrint(this.toString(), debug);
+            this.removeUnproducingNonterminals(debug);
+            DebugPrint(this.toString(), debug);
+            int newRuleSize = rules.size();
+            // второй раз сразу потому что могут удалиться правила
+            if (oldRuleSize != newRuleSize) {
+                this.RemoveUnreachableNonterminals(debug);
+                DebugPrint(this.toString(), debug);
+                int newNewRuleSize = nonterminals.size();
+                if (newNewRuleSize != newRuleSize) {
+                    this.removeUnproducingNonterminals(debug);
+                    DebugPrint(this.toString(), debug);
+                }
+            }
+        } while (!(rules.size() == oldRuleSize));
         System.out.println("Number of rules: " + rules.size());
         System.out.println(this.toString());
     }
@@ -60,7 +77,7 @@ public class Intersection extends Grammar {
                             RP.add(new Three(new Symbol(), new Symbol(s), new Symbol()));
                         }
                         IntersectedRule newRule = new IntersectedRule(newNonterm, RP, debug);
-                        DebugPrint("Made new " + newRule, debug);
+                        DebugPrint("Made new rule " + newRule, debug);
                         this.rules.add(newRule);
                         this.terminalRules.add(newRule);
                         if (this.nonterminals.stream().noneMatch(nt -> ((nt.start.name.equals(newNonterm.start.name)) &&
@@ -130,7 +147,7 @@ public class Intersection extends Grammar {
         boolean isNotOnlyToTerm = false;
         boolean isNotProducing = true;
         for (Rule r2 : CNFRules) {
-            if ((r2.leftPart.name.equals(left.nonterm.name)) && (!Rule.isToTerm(r2))) {
+            if ((r2.leftPart.name.equals(left.nonterm.name)) && (!(Rule.isToTerm(r2) || Rule.isToEmpty(r2)))) {
                 isNotOnlyToTerm = true;
                 isNotProducing = false;
                 //DebugPrint("For " + left + " nonterm " + r.leftPart.name + " rewrites not only to term: " + r2.toString(), debug);
@@ -156,6 +173,9 @@ public class Intersection extends Grammar {
     }
 
     public void RemoveUnreachableNonterminals(boolean debug) {
+        for (Three nt : nonterminals) {
+            nt.reachable = false;
+        }
         int countReachable = 1;
         int countToCompare = 1;
         startingSymbol.reachable = true;
@@ -165,16 +185,33 @@ public class Intersection extends Grammar {
             countToCompare = countReachable;
             countReachable += markReachables(startingSymbol);
         }
-        DebugPrint(nonterminals.stream().map((s) -> s.name + " " + s.reachable).collect(Collectors.joining(", ")), debug);
+        DebugPrint("Current nonterminals: " + nonterminals.stream().map((s) -> s.name + " reach:" + s.reachable).collect(Collectors.joining(", ")), debug);
         for (IntersectedRule r : new ArrayList<>(rules)) {
-            for (Three nt : nonterminals) {
-                if (nt.name.equals(r.leftPart.name) && !nt.reachable) rules.remove(r);
+            if (terminalRules.contains(r)) {
+                for (Three nt : nonterminals) {
+                    if (nt.name.equals(r.leftPart.name) && !(nt.reachable)) {
+                        rules.remove(r);
+                        terminalRules.remove(r);
+                        break;
+                    }
+                }
+            } else {
+                for (Three rpt : r.rightPart) {
+                    if (nonterminals.stream().noneMatch((nt) -> (nt.name.equals(rpt.name))))
+                        rules.remove(r);
+                }
+                for (Three nt : nonterminals) {
+                    if (nt.name.equals(r.leftPart.name) && !(nt.reachable)) rules.remove(r);
+                }
             }
         }
         nonterminals.removeIf(nt -> !nt.reachable);
     }
 
     public void removeUnproducingNonterminals(boolean debug) {
+        for (Three nt : nonterminals) {
+            nt.producing = false;
+        }
         int countProducing = 0;
         int countToCompare = 0;
         for (IntersectedRule r : rules) {
@@ -190,13 +227,13 @@ public class Intersection extends Grammar {
                 }
             }
         }
-        countProducing += markReachables(startingSymbol);
+        countProducing += markProducing();
         DebugPrint("CountP: " + countProducing + ", CountTC: " + countToCompare + "\n", debug);
         do {
             countToCompare = countProducing;
             countProducing += markProducing();
         } while (countProducing != countToCompare);
-        DebugPrint(nonterminals.stream().map((s) -> s.name + " " + s.producing).collect(Collectors.joining(", ")), debug);
+        DebugPrint("Current nonterminals: " + nonterminals.stream().map((s) -> s.name + " prod:" + s.producing).collect(Collectors.joining(", ")), debug);
         for (IntersectedRule r : new ArrayList<>(rules)) {
             for (Three nt : nonterminals) {
                 if (nt.name.equals(r.leftPart.name) && !nt.producing) rules.remove(r);
@@ -210,38 +247,40 @@ public class Intersection extends Grammar {
         for (IntersectedRule ir : rules) {
             if (ir.leftPart.name.equals(s.name)) {
                 for (Three rpt : ir.rightPart) {
-                    if (!(rpt.reachable)) {
-                        added++;
-                        rpt.reachable = true;
-                        for (Three nt : nonterminals) {
-                            if (nt.name.equals(rpt.name))  nt.reachable = true;
+                    for (Three nt : nonterminals) {
+                        if ((nt.name.equals(rpt.name)) && !(nt.reachable)) {
+                                added++;
+                                nt.reachable = true;
+                                added += markReachables(nt);
+                                break;
+                            }
                         }
-                        added += markReachables(rpt);
                     }
                 }
             }
-        }
         return added;
     }
 
     public int markProducing() {
         int added = 0;
         for (IntersectedRule ir : rules) {
-            if (!ir.leftPart.producing) {
-                boolean prod = true;
-                for (Three rpt : ir.rightPart) {
-                    if (!(rpt.producing)) {
-                        prod = false;
-                        break;
+            for (Three nt : nonterminals) {
+                if (nt.name.equals(ir.leftPart.name)) {
+                    if (!(nt.producing)) {
+                        boolean prod = true;
+                        for (Three rpt : ir.rightPart) {
+                            for (Three nt2 : nonterminals) {
+                                if ((rpt.name.equals(nt2.name)) && !(nt2.producing)) {
+                                    prod = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (prod) {
+                            added++;
+                            nt.producing = true;
+                        }
                     }
-                }
-                if (prod) {
-                    added++;
-                    ir.leftPart.producing = true;
-                    for (Three nt : nonterminals) {
-                        if (nt.name.equals(ir.leftPart.name))  nt.producing = true;
-                    }
-                    added += markProducing();
                 }
             }
         }
