@@ -184,8 +184,10 @@ public class CNF extends Grammar{
             }
             boolean quit = false;
             for (Rule r : rules) {
-                if ((r.rightPart.size() == 1) && (r.rightPart.get(0).name.equals(name))) {
+                if ((r.rightPart.size() == 1) && (r.rightPart.get(0).name.equals(name)) &&
+                        (rules.stream().noneMatch((rule) -> (rule.leftPart.name.equals(r.leftPart.name) && (rule.rightPart.size() != 1 || !rule.rightPart.get(0).name.equals(name)))))) {
                     DebugPrint("No need to guard terminal " + name + " cause he already has a guarding nonterminal " + r.leftPart.name, debug);
+                    symName = r.leftPart.name;
                     for (Rule r2 : rules) {
                         if ((r != r2) && (Rule.hasTermAndNotToTerm(r2) && (Rule.getTerminalNames(r2).contains(name)))) {
                             ArrayList<Symbol> newRP = new ArrayList<>();

@@ -8,6 +8,7 @@ public class Intersection extends Grammar {
     ArrayList<IntersectedRule> rules;
     ArrayList<Symbol> terminals;
     Three startingSymbol;
+
     public Intersection(CNF cnf, NFA auto, boolean debug) {
         super();
         this.nonterminals = new ArrayList<>();
@@ -99,39 +100,40 @@ public class Intersection extends Grammar {
                 DebugPrint("Starting to build nonterminal rules for " + r, debug);
                 for (NFA.State p : states) {
                     for (NFA.State q : states) {
-                        if (autoTransitions.stream().anyMatch(t -> (t.left.symbol.name.equals(p.symbol.name) && t.right.symbol.name.equals(q.symbol.name)))) {
-                            Three left = new Three(new Symbol(p.symbol), new Symbol(r.leftPart), new Symbol(q.symbol));
-                            if (CheckForProducing(left, CNFRules, debug)) {
-                                for (NFA.State qi : states) {
-                                    if (autoTransitions.stream().anyMatch(tr ->
-                                            (tr.left.symbol.name.equals(p.symbol.name) && tr.right.symbol.name.equals(qi.symbol.name)))
+                        Three left = new Three(new Symbol(p.symbol), new Symbol(r.leftPart), new Symbol(q.symbol));
+                        DebugPrint("Checking for producing of leftpart Three" + left, debug);
+                        if (CheckForProducing(left, CNFRules, debug)) {
+                            for (NFA.State qi : states) {
+                                if (autoTransitions.stream().anyMatch(tr ->
+                                        (tr.left.symbol.name.equals(p.symbol.name) && tr.right.symbol.name.equals(qi.symbol.name)))
                                     && autoTransitions.stream().anyMatch(tran ->
                                             (tran.left.symbol.name.equals(qi.symbol.name) && tran.right.symbol.name.equals(q.symbol.name)))) {
-                                        Three RPleft = new Three(new Symbol(p.symbol), new Symbol(right1), new Symbol(qi.symbol));
-                                        if (CheckForProducing(RPleft, CNFRules, debug)) {
-                                            if (this.nonterminals.stream().noneMatch(nt -> ((nt.start.name.equals(RPleft.start.name)) &&
-                                                    (nt.end.name.equals(RPleft.end.name) &&
-                                                            (nt.nonterm.name.equals(RPleft.nonterm.name)))))) this.nonterminals.add(RPleft);
-                                            Three RPright = new Three(new Symbol(qi.symbol), new Symbol(right2), new Symbol(q.symbol));
-                                            if (CheckForProducing(RPright, CNFRules, debug)) {
-                                                if (this.nonterminals.stream().noneMatch(nt -> ((nt.start.name.equals(RPright.start.name)) &&
-                                                        (nt.end.name.equals(RPright.end.name) &&
-                                                                (nt.nonterm.name.equals(RPright.nonterm.name)))))) this.nonterminals.add(RPright);
-                                                if (RPleft.name.equals(left.name) && terminalRules.stream().noneMatch(tr -> (tr.leftPart.name.equals(left.name)))) {
-                                                    DebugPrint("Got self-recursive nonterminal " + RPleft.name, debug);
-                                                    continue;
-                                                }
-                                                if (RPright.name.equals(left.name) && terminalRules.stream().noneMatch(tr -> (tr.leftPart.name.equals(left.name)))) {
-                                                    DebugPrint("Got self-recursive nonterminal " + RPright.name, debug);
-                                                    continue;
-                                                }
-                                                ArrayList<Three> RP = new ArrayList<>();
-                                                RP.add(RPleft);
-                                                RP.add(RPright);
-                                                IntersectedRule newRule = new IntersectedRule(left, RP, debug);
-                                                DebugPrint("Got new Rule: " + newRule, debug);
-                                                rules.add(newRule);
+                                    Three RPleft = new Three(new Symbol(p.symbol), new Symbol(right1), new Symbol(qi.symbol));
+                                    DebugPrint("Checking for producing of left Three " + RPleft, debug);
+                                    if (CheckForProducing(RPleft, CNFRules, debug)) {
+                                        if (this.nonterminals.stream().noneMatch(nt -> ((nt.start.name.equals(RPleft.start.name)) &&
+                                                (nt.end.name.equals(RPleft.end.name) &&
+                                                        (nt.nonterm.name.equals(RPleft.nonterm.name)))))) this.nonterminals.add(RPleft);
+                                        Three RPright = new Three(new Symbol(qi.symbol), new Symbol(right2), new Symbol(q.symbol));
+                                        DebugPrint("Checking for producing of right Three " + RPright, debug);
+                                        if (CheckForProducing(RPright, CNFRules, debug)) {
+                                            if (this.nonterminals.stream().noneMatch(nt -> ((nt.start.name.equals(RPright.start.name)) &&
+                                                    (nt.end.name.equals(RPright.end.name) &&
+                                                            (nt.nonterm.name.equals(RPright.nonterm.name)))))) this.nonterminals.add(RPright);
+                                            if (RPleft.name.equals(left.name) && terminalRules.stream().noneMatch(tr -> (tr.leftPart.name.equals(left.name)))) {
+                                                DebugPrint("Got self-recursive nonterminal " + RPleft.name, debug);
+                                                continue;
                                             }
+                                            if (RPright.name.equals(left.name) && terminalRules.stream().noneMatch(tr -> (tr.leftPart.name.equals(left.name)))) {
+                                                DebugPrint("Got self-recursive nonterminal " + RPright.name, debug);
+                                                continue;
+                                            }
+                                            ArrayList<Three> RP = new ArrayList<>();
+                                            RP.add(RPleft);
+                                            RP.add(RPright);
+                                            IntersectedRule newRule = new IntersectedRule(left, RP, debug);
+                                            DebugPrint("Got new Rule: " + newRule, debug);
+                                            rules.add(newRule);
                                         }
                                     }
                                 }
@@ -150,13 +152,13 @@ public class Intersection extends Grammar {
             if ((r2.leftPart.name.equals(left.nonterm.name)) && (!(Rule.isToTerm(r2) || Rule.isToEmpty(r2)))) {
                 isNotOnlyToTerm = true;
                 isNotProducing = false;
-                //DebugPrint("For " + left + " nonterm " + r.leftPart.name + " rewrites not only to term: " + r2.toString(), debug);
+                DebugPrint("For " + left + " nonterm " + r2.leftPart.name + " rewrites not only to term: " + r2.toString(), debug);
                 break;
             }
         }
         if (!isNotOnlyToTerm) {
             for (IntersectedRule termR : terminalRules) {
-                //DebugPrint(termR.leftPart.name + " !=? " + left.name, debug);
+                DebugPrint(termR.leftPart.name + " !=? " + left.name, debug);
                 if (termR.leftPart.name.equals(left.name)) {
                     DebugPrint("Nonterm " + left.nonterm.name + " rewrites only to terms, but has a terminal rule for " + left, debug);
                     isNotProducing = false;
