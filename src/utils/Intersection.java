@@ -104,10 +104,7 @@ public class Intersection extends Grammar {
                         DebugPrint("Checking for producing of leftpart Three" + left, debug);
                         if (CheckForProducing(left, CNFRules, debug)) {
                             for (NFA.State qi : states) {
-                                if (autoTransitions.stream().anyMatch(tr ->
-                                        (tr.left.symbol.name.equals(p.symbol.name) && tr.right.symbol.name.equals(qi.symbol.name)))
-                                    && autoTransitions.stream().anyMatch(tran ->
-                                            (tran.left.symbol.name.equals(qi.symbol.name) && tran.right.symbol.name.equals(q.symbol.name)))) {
+
                                     Three RPleft = new Three(new Symbol(p.symbol), new Symbol(right1), new Symbol(qi.symbol));
                                     DebugPrint("Checking for producing of left Three " + RPleft, debug);
                                     if (CheckForProducing(RPleft, CNFRules, debug)) {
@@ -134,7 +131,6 @@ public class Intersection extends Grammar {
                                             IntersectedRule newRule = new IntersectedRule(left, RP, debug);
                                             DebugPrint("Got new Rule: " + newRule, debug);
                                             rules.add(newRule);
-                                        }
                                     }
                                 }
                             }
